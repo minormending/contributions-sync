@@ -218,7 +218,7 @@ def main() -> None:
     # Load parameters from environment variables.
     work_username: Optional[str] = os.getenv("WORK_USERNAME")
     current_username: Optional[str] = os.getenv("CURRENT_USERNAME")
-    token: Optional[str] = os.getenv("GITHUB_TOKEN")
+    token: Optional[str] = os.getenv("GH_TOKEN")
     dest_repo: Optional[str] = os.getenv("DESTINATION_REPO")
     dest_branch: str = os.getenv("DESTINATION_BRANCH", "main")
     author_name: Optional[str] = os.getenv("AUTHOR_NAME")
@@ -231,7 +231,7 @@ def main() -> None:
     if not current_username:
         missing_params.append("CURRENT_USERNAME")
     if not token:
-        missing_params.append("GITHUB_TOKEN")
+        missing_params.append("GH_TOKEN")
     if not dest_repo:
         missing_params.append("DESTINATION_REPO")
     if missing_params:
