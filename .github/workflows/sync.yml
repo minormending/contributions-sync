@@ -1,0 +1,34 @@
+name: Daily Contributions Sync
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Runs daily at 05:15 UTC
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python and Poetry
+        uses: abatilo/actions-poetry@v2
+        with:
+          poetry-version: "1.7.1"  # or latest
+
+      - name: Install dependencies
+        run: poetry install --no-interaction --no-root
+
+      - name: Run sync script
+        env:
+          WORK_USERNAME: ${{ secrets.WORK_USERNAME }}
+          CURRENT_USERNAME: ${{ secrets.CURRENT_USERNAME }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DESTINATION_REPO: ${{ secrets.DESTINATION_REPO }}
+          DESTINATION_BRANCH: ${{ secrets.DESTINATION_BRANCH }}
+          AUTHOR_NAME: ${{ secrets.AUTHOR_NAME }}
+          AUTHOR_EMAIL: ${{ secrets.AUTHOR_EMAIL }}
+        run: |
+          poetry run contribution-sync
