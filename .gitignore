@@ -1,0 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Local env files
+.env
+.env.*
+
+# Poetry
+poetry.lock
+
+# VS Code / PyCharm
+.vscode/
+.idea/
+
+# Mac / Unix
+.DS_Store
+
+# Logs and temporary
+*.log
+*.tmp
