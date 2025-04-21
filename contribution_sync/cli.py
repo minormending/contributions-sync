@@ -136,3 +136,64 @@ def update_ref(owner: str, repo: str, branch: str, new_sha: str, token: str) -> 
     logging.info("Updated branch %s to new commit %s", branch, new_sha)
 
 
+### PART 3: Diff Calculation and Commit Creation ###
+
+
+def calculate_diff(
+    work_contrib: Dict[str, int], current_contrib: Dict[str, int]
+) -> Dict[str, int]:
+    """
+    Calculate the difference in contributions for each day.
+    Returns a dictionary mapping date to the number of additional commits required
+    (i.e. diff = work contributions - current contributions, or 0 if current is greater).
+    """
+    diff: Dict[str, int] = {}
+    for day, work_count in work_contrib.items():
+        current_count = current_contrib.get(day, 0)
+        extra = work_count - current_count
+        diff[day] = extra if extra > 0 else 0
+    total_missing = sum(diff.values())
+    logging.info("Total additional commits needed: %d", total_missing)
+    return diff
+
+
+def update_contributions(
+    diff: Dict[str, int],
+    owner: str,
+    repo: str,
+    branch: str,
+    token: str,
+    author_name: str,
+    author_email: str,
+) -> None:
+    """
+    For each day with missing commits, create the required number of empty commits
+    (via the GitHub API) so that the contributions graph will match.
+    Commits are created in chronological order.
+    """
+    current_sha: str = get_latest_commit(owner, repo, branch, token)
+    tree_sha: str = get_commit_tree(owner, repo, current_sha, token)
+    for day in sorted(diff.keys()):
+        missing: int = diff[day]
+        if missing <= 0:
+            continue
+        commit_date: str = f"{day}T12:00:00Z"  # Fixed time; adjust as needed.
+        for i in range(missing):
+            message: str = f"Sync commit for {day} ({i+1}/{missing})"
+            logging.info("Creating commit for %s: %s", day, message)
+            new_sha: str = create_commit(
+                owner,
+                repo,
+                message,
+                tree_sha,
+                current_sha,
+                commit_date,
+                author_name,
+                author_email,
+                token,
+            )
+            update_ref(owner, repo, branch, new_sha, token)
+            current_sha = new_sha  # Next commit will have this as parent.
+            logging.info("Created commit %s for date %s", new_sha, day)
+
+
