@@ -197,3 +197,78 @@ def update_contributions(
             logging.info("Created commit %s for date %s", new_sha, day)
 
 
+### PART 4: Main Function ###
+
+
+def main() -> None:
+    # Only the year is passed via CLI; all other parameters are loaded from .env.
+    parser = argparse.ArgumentParser(
+        description="Sync contributions from a work account to the current account by adding "
+        "empty commits via the GitHub API so that the contributions graph will match."
+    )
+    parser.add_argument(
+        "--year",
+        type=int,
+        default=dt.utcnow().year,
+        help="Year for which to sync contributions (default: current year).",
+    )
+    args = parser.parse_args()
+    year: int = args.year
+
+    # Load parameters from environment variables.
+    work_username: Optional[str] = os.getenv("WORK_USERNAME")
+    current_username: Optional[str] = os.getenv("CURRENT_USERNAME")
+    token: Optional[str] = os.getenv("GITHUB_TOKEN")
+    dest_repo: Optional[str] = os.getenv("DESTINATION_REPO")
+    dest_branch: str = os.getenv("DESTINATION_BRANCH", "main")
+    author_name: Optional[str] = os.getenv("AUTHOR_NAME")
+    author_email: Optional[str] = os.getenv("AUTHOR_EMAIL")
+
+    # Verify required parameters.
+    missing_params = []
+    if not work_username:
+        missing_params.append("WORK_USERNAME")
+    if not current_username:
+        missing_params.append("CURRENT_USERNAME")
+    if not token:
+        missing_params.append("GITHUB_TOKEN")
+    if not dest_repo:
+        missing_params.append("DESTINATION_REPO")
+    if missing_params:
+        raise ValueError(
+            "Missing required environment variables: " + ", ".join(missing_params)
+        )
+
+    # Use current_username as a default for author_name if not provided.
+    if not author_name:
+        author_name = current_username
+    # Use a default author email if not provided.
+    if not author_email:
+        author_email = f"{current_username}@users.noreply.github.com"
+
+    logging.info(
+        "Fetching contributions for work account: %s (%s)", work_username, year
+    )
+    work_contrib: Dict[str, int] = get_contributions(work_username, year)
+    logging.info(
+        "Fetching contributions for current account: %s (%s)", current_username, year
+    )
+    current_contrib: Dict[str, int] = get_contributions(current_username, year)
+
+    diff: Dict[str, int] = calculate_diff(work_contrib, current_contrib)
+    if sum(diff.values()) == 0:
+        logging.info("No additional commits are required; contributions already match.")
+        return
+
+    parts = dest_repo.split("/")
+    if len(parts) != 2:
+        raise ValueError("DESTINATION_REPO must be in 'owner/repo' format.")
+    owner, repo = parts[0], parts[1]
+    logging.info("Updating contributions on %s/%s, branch %s", owner, repo, dest_branch)
+    update_contributions(
+        diff, owner, repo, dest_branch, token, author_name, author_email
+    )
+
+
+if __name__ == "__main__":
+    main()
