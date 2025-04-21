@@ -25,7 +25,7 @@ jobs:
         env:
           WORK_USERNAME: ${{ secrets.WORK_USERNAME }}
           CURRENT_USERNAME: ${{ secrets.CURRENT_USERNAME }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
           DESTINATION_REPO: ${{ secrets.DESTINATION_REPO }}
           DESTINATION_BRANCH: ${{ secrets.DESTINATION_BRANCH }}
           AUTHOR_NAME: ${{ secrets.AUTHOR_NAME }}
