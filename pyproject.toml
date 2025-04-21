@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "contribution-sync"
+version = "0.1.0"
+description = "A tool to sync GitHub commit graph from a work repository to a personal repository."
+authors = ["Kevin Ramdath <kkramdath@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.scripts]
+contribution-sync = "contribution_sync.cli:main"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "^2.28.1"
+beautifulsoup4 = "^4.13.4"
+python-dotenv = "^1.1.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
